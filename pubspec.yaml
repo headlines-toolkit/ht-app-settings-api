@@ -1,6 +1,6 @@
 name: ht_app_settings_api
 description: ...
-repository: https://github.com/headlines-toolkit/ht-app-settings-
+repository: https://github.com/headlines-toolkit/ht-app-settings-api
 publish_to: none
 
 environment:
