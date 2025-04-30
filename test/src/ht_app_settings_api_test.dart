@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, cast_nullable_to_non_nullable, lines_longer_than_80_chars
 import 'package:ht_app_settings_api/ht_app_settings_api.dart';
 import 'package:ht_app_settings_client/ht_app_settings_client.dart';
 import 'package:ht_http_client/ht_http_client.dart';
@@ -45,6 +45,23 @@ DisplaySettings createDisplaySettingsObject({
   );
 }
 
+// Helper to create a SuccessApiResponse JSON structure
+Map<String, dynamic> createSuccessResponseJson<T>(
+  T data, {
+  String? requestId,
+  DateTime? timestamp,
+}) {
+  // Simulate the structure the API would return
+  return {
+    'data':
+        data, // Assumes data is already JSON-serializable (Map or primitive)
+    'metadata': {
+      if (requestId != null) 'request_id': requestId,
+      if (timestamp != null) 'timestamp': timestamp.toIso8601String(),
+    },
+  };
+}
+
 void main() {
   group('HtAppSettingsApi', () {
     late HtHttpClient mockHttpClient;
@@ -67,14 +84,15 @@ void main() {
     });
 
     group('getDisplaySettings', () {
-      final validJson = createDisplaySettingsJson();
+      final validSettingsJson = createDisplaySettingsJson();
       final expectedSettings = createDisplaySettingsObject();
+      final validResponseJson = createSuccessResponseJson(validSettingsJson);
 
-      test('completes successfully when http client returns valid data',
+      test('completes successfully when http client returns valid wrapped data',
           () async {
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
-        ).thenAnswer((_) async => validJson);
+        ).thenAnswer((_) async => validResponseJson);
 
         final actualSettings = await apiClient.getDisplaySettings();
 
@@ -83,21 +101,43 @@ void main() {
             .called(1);
       });
 
-      test('throws HtAppSettingsException on invalid JSON structure', () async {
-        // Provide JSON with a type mismatch guaranteed to fail parsing
+      test('throws UnknownException on invalid inner JSON structure', () async {
+        // Valid wrapper, but invalid inner data
+        final invalidInnerJson = {'baseTheme': 123}; // Invalid type for enum
+        final invalidResponseJson = createSuccessResponseJson(invalidInnerJson);
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
-        ).thenAnswer((_) async => {'baseTheme': 123}); // Invalid type for enum
+        ).thenAnswer((_) async => invalidResponseJson);
 
         expect(
           apiClient.getDisplaySettings(),
+          // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
         verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
             .called(1);
       });
 
-      test('throws HtAppSettingsException on generic exception', () async {
+      test(
+          'throws UnknownException on invalid wrapper structure (missing data)',
+          () async {
+        // Invalid wrapper structure
+        final invalidWrapperJson = {'metadata': <String, dynamic>{}};
+        when(
+          () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
+        ).thenAnswer((_) async => invalidWrapperJson);
+
+        expect(
+          apiClient.getDisplaySettings(),
+          // Expect UnknownException because FormatException is wrapped
+          throwsA(isA<UnknownException>()),
+        );
+        verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
+            .called(1);
+      });
+
+      test('throws UnknownException on generic exception during http call',
+          () async {
         final exception = Exception('Generic error');
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
@@ -111,7 +151,8 @@ void main() {
             .called(1);
       });
 
-      test('throws HtAppSettingsException on generic exception', () async {
+      test('throws UnknownException on generic exception during http call',
+          () async {
         final exception = Exception('Generic error');
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
@@ -211,13 +252,14 @@ void main() {
 
     group('getLanguage', () {
       const expectedLanguage = 'fr';
-      final validJson = {'language': expectedLanguage};
+      final validLanguageJson = {'language': expectedLanguage};
+      final validResponseJson = createSuccessResponseJson(validLanguageJson);
 
-      test('completes successfully when http client returns valid data',
+      test('completes successfully when http client returns valid wrapped data',
           () async {
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
-        ).thenAnswer((_) async => validJson);
+        ).thenAnswer((_) async => validResponseJson);
 
         final actualLanguage = await apiClient.getLanguage();
 
@@ -227,29 +269,17 @@ void main() {
         ).called(1);
       });
 
-      test('throws FormatException when language key is missing', () async {
-        when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
-        ).thenAnswer((_) async => {'other_key': 'value'}); // Missing key
-
-        expect(
-          apiClient.getLanguage(),
-          throwsA(isA<FormatException>()),
-        );
-        verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
-        ).called(1);
-      });
-
-      test('throws FormatException when language value is not string',
+      test('throws UnknownException when language key is missing in inner data',
           () async {
+        final invalidInnerJson = {'other_key': 'value'}; // Missing key
+        final invalidResponseJson = createSuccessResponseJson(invalidInnerJson);
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
-        ).thenAnswer((_) async => {'language': 123}); // Wrong type
+        ).thenAnswer((_) async => invalidResponseJson);
 
-        // Expect UnknownException because the implementation wraps it
         expect(
           apiClient.getLanguage(),
+          // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
         verify(
@@ -257,7 +287,45 @@ void main() {
         ).called(1);
       });
 
-      test('rethrows HtHttpException when http client throws', () async {
+      test('throws UnknownException when language value is not string',
+          () async {
+        final invalidInnerJson = {'language': 123}; // Wrong type
+        final invalidResponseJson = createSuccessResponseJson(invalidInnerJson);
+        when(
+          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+        ).thenAnswer((_) async => invalidResponseJson);
+
+        expect(
+          apiClient.getLanguage(),
+          // Expect UnknownException because FormatException is wrapped
+          throwsA(isA<UnknownException>()),
+        );
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+        ).called(1);
+      });
+
+      test(
+          'throws UnknownException on invalid wrapper structure (missing data)',
+          () async {
+        // Invalid wrapper structure
+        final invalidWrapperJson = {'metadata': <String, dynamic>{}};
+        when(
+          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+        ).thenAnswer((_) async => invalidWrapperJson);
+
+        expect(
+          apiClient.getLanguage(),
+          // Expect UnknownException because FormatException is wrapped
+          throwsA(isA<UnknownException>()),
+        );
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+        ).called(1);
+      });
+
+      test('rethrows HtHttpException when http client throws during http call',
+          () async {
         final exception = ServerException('Internal server error');
         when(
           () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
