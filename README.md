@@ -35,6 +35,9 @@ dependencies:
   ht_http_client:
     git:
       url: https://github.com/headlines-toolkit/ht-http-client.git
+  ht_shared:
+    git:
+      url: https://github.com/headlines-toolkit/ht-shared.git
 ```
 
 ## Features
