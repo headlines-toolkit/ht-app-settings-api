@@ -1,5 +1,6 @@
 import 'package:ht_app_settings_client/ht_app_settings_client.dart';
 import 'package:ht_http_client/ht_http_client.dart';
+import 'package:ht_shared/ht_shared.dart';
 
 /// {@template ht_app_settings_api}
 /// An API client implementation for managing user application settings
@@ -26,15 +27,26 @@ class HtAppSettingsApi implements HtAppSettingsClient {
   @override
   Future<DisplaySettings> getDisplaySettings() async {
     try {
-      final response = await _httpClient.get<Map<String, dynamic>>(
+      final responseMap = await _httpClient.get<Map<String, dynamic>>(
         _baseDisplayPath,
       );
-      // Assuming the API returns the DisplaySettings JSON directly.
-      return DisplaySettings.fromJson(response);
+      // Deserialize the wrapper and the nested data.
+      final successResponse = SuccessApiResponse.fromJson(
+        responseMap,
+        (dataJson) =>
+            DisplaySettings.fromJson(dataJson! as Map<String, dynamic>),
+      );
+      return successResponse.data;
     } on HtHttpException {
       rethrow; // Propagate HTTP-related errors.
+    } on FormatException catch (e, stackTrace) {
+      // Catch FormatExceptions during deserialization of wrapper or data.
+      Error.throwWithStackTrace(
+        UnknownException('Failed to parse display settings response: $e'),
+        stackTrace,
+      );
     } catch (e, stackTrace) {
-      // Catch potential FormatExceptions during deserialization or others.
+      // Catch other potential errors.
       Error.throwWithStackTrace(
         UnknownException('Failed to get display settings: $e'),
         stackTrace,
@@ -62,22 +74,33 @@ class HtAppSettingsApi implements HtAppSettingsClient {
   @override
   Future<AppLanguage> getLanguage() async {
     try {
-      // Assuming the API returns a simple JSON like {"language": "en"}
-      final response = await _httpClient.get<Map<String, dynamic>>(
+      final responseMap = await _httpClient.get<Map<String, dynamic>>(
         _baseLanguagePath,
       );
-      final language = response['language'] as String?;
+      // Deserialize the wrapper, expecting the inner data to be a Map.
+      final successResponse = SuccessApiResponse.fromJson(
+        responseMap,
+        (dataJson) => dataJson! as Map<String, dynamic>,
+      );
+      // Extract the language from the inner data map.
+      final languageData = successResponse.data;
+      final language = languageData['language'] as String?;
       if (language == null) {
         throw const FormatException(
-          'Language field missing or not a string in response.',
+          "Response data missing 'language' field or it's not a string.",
         );
       }
       return language;
     } on HtHttpException {
       rethrow;
-    } on FormatException {
-      rethrow; // Let FormatException propagate for deserialization issues.
+    } on FormatException catch (e, stackTrace) {
+      // Catch FormatExceptions during deserialization or if structure is wrong.
+      Error.throwWithStackTrace(
+        UnknownException('Failed to parse language response: $e'),
+        stackTrace,
+      );
     } catch (e, stackTrace) {
+      // Catch other potential errors.
       Error.throwWithStackTrace(
         UnknownException('Failed to get language: $e'),
         stackTrace,
