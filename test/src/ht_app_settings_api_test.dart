@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, cast_nullable_to_non_nullable, lines_longer_than_80_chars
+// ignore_for_file: prefer_const_constructors, cast_nullable_to_non_nullable
 import 'package:ht_app_settings_api/ht_app_settings_api.dart';
 import 'package:ht_app_settings_client/ht_app_settings_client.dart';
 import 'package:ht_http_client/ht_http_client.dart';

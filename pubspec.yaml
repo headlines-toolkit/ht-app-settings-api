@@ -1,5 +1,5 @@
 name: ht_app_settings_api
-description: ...
+description: An API client implementation for managing user application settings via an HTTP backend, part of the Headlines Toolkit (HT) ecosystem.
 repository: https://github.com/headlines-toolkit/ht-app-settings-api
 publish_to: none
 
@@ -13,7 +13,10 @@ dependencies:
   ht_http_client:
     git:
       url: https://github.com/headlines-toolkit/ht-http-client.git
-
+  ht_shared:
+    git:
+      url: https://github.com/headlines-toolkit/ht-shared.git
+      
 dev_dependencies:
   mocktail: ^1.0.4
   test: ^1.25.8
