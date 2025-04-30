@@ -47,7 +47,6 @@ dependencies:
 *   Uses `HtHttpClient` for making HTTP requests.
 *   Handles HTTP errors by throwing specific `HtHttpException` subtypes.
 *   Wraps other potential errors (e.g., deserialization) in `UnknownException`.
-*   **Note:** The `watch` methods (`watchDisplaySettings`, `watchLanguage`) are currently unimplemented in this API client and will throw `UnimplementedError`.
 
 ## Usage
 
