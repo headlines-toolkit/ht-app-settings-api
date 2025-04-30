@@ -1,15 +1,18 @@
 name: ht_app_settings_api
 description: ...
-repository: https://github.com/headlines-toolkit/ht-app-settings-client
+repository: https://github.com/headlines-toolkit/ht-app-settings-
 publish_to: none
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies: 
-  app_settings_client:
+  ht_app_settings_client:
     git:
       url: https://github.com/headlines-toolkit/ht-app-settings-client.git
+  ht_http_client:
+    git:
+      url: https://github.com/headlines-toolkit/ht-http-client.git
 
 dev_dependencies:
   mocktail: ^1.0.4
