@@ -2,6 +2,7 @@
 import 'package:ht_app_settings_api/ht_app_settings_api.dart';
 import 'package:ht_app_settings_client/ht_app_settings_client.dart';
 import 'package:ht_http_client/ht_http_client.dart';
+import 'package:ht_shared/ht_shared.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
