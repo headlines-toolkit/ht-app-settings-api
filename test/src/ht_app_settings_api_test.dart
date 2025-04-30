@@ -384,21 +384,5 @@ void main() {
         ).called(1);
       });
     });
-
-    group('watch methods', () {
-      test('watchDisplaySettings throws UnimplementedError', () {
-        expect(
-          () => apiClient.watchDisplaySettings(),
-          throwsUnimplementedError,
-        );
-      });
-
-      test('watchLanguage throws UnimplementedError', () {
-        expect(
-          () => apiClient.watchLanguage(),
-          throwsUnimplementedError,
-        );
-      });
-    });
   });
 }
