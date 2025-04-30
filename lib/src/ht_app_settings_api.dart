@@ -117,26 +117,4 @@ class HtAppSettingsApi implements HtAppSettingsClient {
       );
     }
   }
-
-  @override
-  Stream<DisplaySettings> watchDisplaySettings() {
-    // Watching via standard HTTP polling is complex and often inefficient.
-    // This API client implementation does not support real-time watches.
-    // The corresponding Repository might implement this differently
-    // (e.g., cache).
-    throw UnimplementedError(
-      'watchDisplaySettings is not supported by HtAppSettingsApi.',
-    );
-  }
-
-  @override
-  Stream<AppLanguage> watchLanguage() {
-    // Watching via standard HTTP polling is complex and often inefficient.
-    // This API client implementation does not support real-time watches.
-    // The corresponding Repository might implement this differently
-    // (e.g., cache).
-    throw UnimplementedError(
-      'watchLanguage is not supported by HtAppSettingsApi.',
-    );
-  }
 }
