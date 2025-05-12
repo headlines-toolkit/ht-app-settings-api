@@ -19,16 +19,11 @@ class HtAppSettingsApi implements HtAppSettingsClient {
 
   final HtHttpClient _httpClient;
 
-  // Define base paths for the nested settings endpoints.
-  static const String _baseDisplayPath = '/api/v1/users/me/settings/display';
-  static const String _baseLanguagePath = '/api/v1/users/me/settings/language';
-  static const String _baseSettingsPath = '/api/v1/users/me/settings';
-
   @override
-  Future<DisplaySettings> getDisplaySettings() async {
+  Future<DisplaySettings> getDisplaySettings({required String userId}) async {
     try {
       final responseMap = await _httpClient.get<Map<String, dynamic>>(
-        _baseDisplayPath,
+        '/api/v1/users/$userId/settings/display',
       );
       // Deserialize the wrapper and the nested data.
       final successResponse = SuccessApiResponse.fromJson(
@@ -55,10 +50,13 @@ class HtAppSettingsApi implements HtAppSettingsClient {
   }
 
   @override
-  Future<void> setDisplaySettings(DisplaySettings settings) async {
+  Future<void> setDisplaySettings({
+    required String userId,
+    required DisplaySettings settings,
+  }) async {
     try {
       await _httpClient.put<void>(
-        _baseDisplayPath,
+        '/api/v1/users/$userId/settings/display',
         data: settings.toJson(), // Send the settings object as JSON body.
       );
     } on HtHttpException {
@@ -72,10 +70,10 @@ class HtAppSettingsApi implements HtAppSettingsClient {
   }
 
   @override
-  Future<AppLanguage> getLanguage() async {
+  Future<AppLanguage> getLanguage({required String userId}) async {
     try {
       final responseMap = await _httpClient.get<Map<String, dynamic>>(
-        _baseLanguagePath,
+        '/api/v1/users/$userId/settings/language',
       );
       // Deserialize the wrapper, expecting the inner data to be a Map.
       final successResponse = SuccessApiResponse.fromJson(
@@ -109,11 +107,14 @@ class HtAppSettingsApi implements HtAppSettingsClient {
   }
 
   @override
-  Future<void> setLanguage(AppLanguage language) async {
+  Future<void> setLanguage({
+    required String userId,
+    required AppLanguage language,
+  }) async {
     try {
       // Send the language in a simple JSON structure.
       await _httpClient.put<void>(
-        _baseLanguagePath,
+        '/api/v1/users/$userId/settings/language',
         data: {'language': language},
       );
     } on HtHttpException {
@@ -127,10 +128,10 @@ class HtAppSettingsApi implements HtAppSettingsClient {
   }
 
   @override
-  Future<void> clearSettings() async {
+  Future<void> clearSettings({required String userId}) async {
     try {
       // Assuming DELETE on the base settings path clears all user settings.
-      await _httpClient.delete<void>(_baseSettingsPath);
+      await _httpClient.delete<void>('/api/v1/users/$userId/settings');
     } on HtHttpException {
       rethrow;
     } catch (e, stackTrace) {
