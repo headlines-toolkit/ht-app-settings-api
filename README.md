@@ -70,9 +70,11 @@ final HtAppSettingsClient appSettingsApi = HtAppSettingsApi(
 );
 
 // Example: Fetch display settings
-Future<void> loadSettings() async {
+Future<void> loadSettings(String userId) async {
   try {
-    final DisplaySettings settings = await appSettingsApi.getDisplaySettings();
+    final DisplaySettings settings = await appSettingsApi.getDisplaySettings(
+      userId: userId,
+    );
     print('Current theme: ${settings.baseTheme}');
     // ... use the settings
   } on HtHttpException catch (e) {
@@ -83,9 +85,12 @@ Future<void> loadSettings() async {
 }
 
 // Example: Set language
-Future<void> changeLanguage(AppLanguage newLanguage) async {
+Future<void> changeLanguage(String userId, AppLanguage newLanguage) async {
   try {
-    await appSettingsApi.setLanguage(newLanguage);
+    await appSettingsApi.setLanguage(
+      userId: userId,
+      language: newLanguage,
+    );
     print('Language updated successfully.');
   } on HtHttpException catch (e) {
     print('HTTP Error setting language: ${e.message}');
