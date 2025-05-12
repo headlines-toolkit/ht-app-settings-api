@@ -69,10 +69,7 @@ void main() {
     late HtAppSettingsApi apiClient;
     // late RequestOptions mockRequestOptions; // Not needed now
 
-    // Base paths from the implementation (ensure they match)
-    const baseDisplayPath = '/api/v1/users/me/settings/display';
-    const baseLanguagePath = '/api/v1/users/me/settings/language';
-    const baseSettingsPath = '/api/v1/users/me/settings';
+    const testUserId = 'test-user-id';
 
     setUp(() {
       mockHttpClient = MockHtHttpClient();
@@ -92,14 +89,20 @@ void main() {
       test('completes successfully when http client returns valid wrapped data',
           () async {
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
         ).thenAnswer((_) async => validResponseJson);
 
-        final actualSettings = await apiClient.getDisplaySettings();
+        final actualSettings =
+            await apiClient.getDisplaySettings(userId: testUserId);
 
         expect(actualSettings, equals(expectedSettings));
-        verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
-            .called(1);
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
+        ).called(1);
       });
 
       test('throws UnknownException on invalid inner JSON structure', () async {
@@ -107,16 +110,21 @@ void main() {
         final invalidInnerJson = {'baseTheme': 123}; // Invalid type for enum
         final invalidResponseJson = createSuccessResponseJson(invalidInnerJson);
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
         ).thenAnswer((_) async => invalidResponseJson);
 
         expect(
-          apiClient.getDisplaySettings(),
+          apiClient.getDisplaySettings(userId: testUserId),
           // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
-        verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
-            .called(1);
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
+        ).called(1);
       });
 
       test(
@@ -125,46 +133,60 @@ void main() {
         // Invalid wrapper structure
         final invalidWrapperJson = {'metadata': <String, dynamic>{}};
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
         ).thenAnswer((_) async => invalidWrapperJson);
 
         expect(
-          apiClient.getDisplaySettings(),
+          apiClient.getDisplaySettings(userId: testUserId),
           // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
-        verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
-            .called(1);
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
+        ).called(1);
       });
 
       test('throws UnknownException on generic exception during http call',
           () async {
         final exception = Exception('Generic error');
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.getDisplaySettings(),
-          throwsA(isA<UnknownException>()),
-        );
-        verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
-            .called(1);
-      });
-
-      test('throws UnknownException on generic exception during http call',
-          () async {
-        final exception = Exception('Generic error');
-        when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
-        ).thenThrow(exception);
-
-        expect(
-          apiClient.getLanguage(),
+          apiClient.getDisplaySettings(userId: testUserId),
           throwsA(isA<UnknownException>()),
         );
         verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
+        ).called(1);
+      });
+
+      test('throws UnknownException on generic exception during http call',
+          () async {
+        final exception = Exception('Generic error');
+        when(
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
+        ).thenThrow(exception);
+
+        expect(
+          apiClient.getLanguage(userId: testUserId),
+          throwsA(isA<UnknownException>()),
+        );
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).called(1);
       });
 
@@ -172,15 +194,20 @@ void main() {
         // Use the correct constructor based on feedback
         final exception = NotFoundException('Resource not found');
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.getDisplaySettings(),
+          apiClient.getDisplaySettings(userId: testUserId),
           throwsA(isA<NotFoundException>()),
         );
-        verify(() => mockHttpClient.get<Map<String, dynamic>>(baseDisplayPath))
-            .called(1);
+        verify(
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/display',
+          ),
+        ).called(1);
       });
     });
 
@@ -193,16 +220,19 @@ void main() {
       test('completes successfully when http client succeeds', () async {
         when(
           () => mockHttpClient.put<void>(
-            baseDisplayPath,
+            '/api/v1/users/$testUserId/settings/display',
             data: settingsJson,
           ),
         ).thenAnswer((_) async {}); // Simulate successful void PUT
 
-        await apiClient.setDisplaySettings(settingsToSet);
+        await apiClient.setDisplaySettings(
+          userId: testUserId,
+          settings: settingsToSet,
+        );
 
         verify(
           () => mockHttpClient.put<void>(
-            baseDisplayPath,
+            '/api/v1/users/$testUserId/settings/display',
             data: settingsJson,
           ),
         ).called(1);
@@ -212,18 +242,21 @@ void main() {
         final exception = Exception('Generic error');
         when(
           () => mockHttpClient.put<void>(
-            baseDisplayPath,
+            '/api/v1/users/$testUserId/settings/display',
             data: settingsJson,
           ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.setDisplaySettings(settingsToSet),
+          apiClient.setDisplaySettings(
+            userId: testUserId,
+            settings: settingsToSet,
+          ),
           throwsA(isA<UnknownException>()),
         );
         verify(
           () => mockHttpClient.put<void>(
-            baseDisplayPath,
+            '/api/v1/users/$testUserId/settings/display',
             data: settingsJson,
           ),
         ).called(1);
@@ -233,18 +266,21 @@ void main() {
         final exception = BadRequestException('Invalid settings format');
         when(
           () => mockHttpClient.put<void>(
-            baseDisplayPath,
+            '/api/v1/users/$testUserId/settings/display',
             data: settingsJson,
           ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.setDisplaySettings(settingsToSet),
+          apiClient.setDisplaySettings(
+            userId: testUserId,
+            settings: settingsToSet,
+          ),
           throwsA(isA<BadRequestException>()),
         );
         verify(
           () => mockHttpClient.put<void>(
-            baseDisplayPath,
+            '/api/v1/users/$testUserId/settings/display',
             data: settingsJson,
           ),
         ).called(1);
@@ -259,14 +295,18 @@ void main() {
       test('completes successfully when http client returns valid wrapped data',
           () async {
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).thenAnswer((_) async => validResponseJson);
 
-        final actualLanguage = await apiClient.getLanguage();
+        final actualLanguage = await apiClient.getLanguage(userId: testUserId);
 
         expect(actualLanguage, equals(expectedLanguage));
         verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).called(1);
       });
 
@@ -275,16 +315,20 @@ void main() {
         final invalidInnerJson = {'other_key': 'value'}; // Missing key
         final invalidResponseJson = createSuccessResponseJson(invalidInnerJson);
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).thenAnswer((_) async => invalidResponseJson);
 
         expect(
-          apiClient.getLanguage(),
+          apiClient.getLanguage(userId: testUserId),
           // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
         verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).called(1);
       });
 
@@ -293,16 +337,20 @@ void main() {
         final invalidInnerJson = {'language': 123}; // Wrong type
         final invalidResponseJson = createSuccessResponseJson(invalidInnerJson);
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).thenAnswer((_) async => invalidResponseJson);
 
         expect(
-          apiClient.getLanguage(),
+          apiClient.getLanguage(userId: testUserId),
           // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
         verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).called(1);
       });
 
@@ -312,16 +360,20 @@ void main() {
         // Invalid wrapper structure
         final invalidWrapperJson = {'metadata': <String, dynamic>{}};
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).thenAnswer((_) async => invalidWrapperJson);
 
         expect(
-          apiClient.getLanguage(),
+          apiClient.getLanguage(userId: testUserId),
           // Expect UnknownException because FormatException is wrapped
           throwsA(isA<UnknownException>()),
         );
         verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).called(1);
       });
 
@@ -329,15 +381,19 @@ void main() {
           () async {
         final exception = ServerException('Internal server error');
         when(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.getLanguage(),
+          apiClient.getLanguage(userId: testUserId),
           throwsA(isA<ServerException>()),
         );
         verify(
-          () => mockHttpClient.get<Map<String, dynamic>>(baseLanguagePath),
+          () => mockHttpClient.get<Map<String, dynamic>>(
+            '/api/v1/users/$testUserId/settings/language',
+          ),
         ).called(1);
       });
     });
@@ -349,16 +405,19 @@ void main() {
       test('completes successfully when http client succeeds', () async {
         when(
           () => mockHttpClient.put<void>(
-            baseLanguagePath,
+            '/api/v1/users/$testUserId/settings/language',
             data: expectedData,
           ),
         ).thenAnswer((_) async {});
 
-        await apiClient.setLanguage(languageToSet);
+        await apiClient.setLanguage(
+          userId: testUserId,
+          language: languageToSet,
+        );
 
         verify(
           () => mockHttpClient.put<void>(
-            baseLanguagePath,
+            '/api/v1/users/$testUserId/settings/language',
             data: expectedData,
           ),
         ).called(1);
@@ -368,18 +427,18 @@ void main() {
         final exception = Exception('Generic error');
         when(
           () => mockHttpClient.put<void>(
-            baseLanguagePath,
+            '/api/v1/users/$testUserId/settings/language',
             data: expectedData,
           ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.setLanguage(languageToSet),
+          apiClient.setLanguage(userId: testUserId, language: languageToSet),
           throwsA(isA<UnknownException>()),
         );
         verify(
           () => mockHttpClient.put<void>(
-            baseLanguagePath,
+            '/api/v1/users/$testUserId/settings/language',
             data: expectedData,
           ),
         ).called(1);
@@ -390,18 +449,18 @@ void main() {
         final exception = NetworkException();
         when(
           () => mockHttpClient.put<void>(
-            baseLanguagePath,
+            '/api/v1/users/$testUserId/settings/language',
             data: expectedData,
           ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.setLanguage(languageToSet),
+          apiClient.setLanguage(userId: testUserId, language: languageToSet),
           throwsA(isA<NetworkException>()),
         );
         verify(
           () => mockHttpClient.put<void>(
-            baseLanguagePath,
+            '/api/v1/users/$testUserId/settings/language',
             data: expectedData,
           ),
         ).called(1);
@@ -411,28 +470,36 @@ void main() {
     group('clearSettings', () {
       test('completes successfully when http client succeeds', () async {
         when(
-          () => mockHttpClient.delete<void>(baseSettingsPath),
+          () => mockHttpClient.delete<void>(
+            '/api/v1/users/$testUserId/settings',
+          ),
         ).thenAnswer((_) async {});
 
-        await apiClient.clearSettings();
+        await apiClient.clearSettings(userId: testUserId);
 
         verify(
-          () => mockHttpClient.delete<void>(baseSettingsPath),
+          () => mockHttpClient.delete<void>(
+            '/api/v1/users/$testUserId/settings',
+          ),
         ).called(1);
       });
 
       test('throws HtAppSettingsException on generic exception', () async {
         final exception = Exception('Generic error');
         when(
-          () => mockHttpClient.delete<void>(baseSettingsPath),
+          () => mockHttpClient.delete<void>(
+            '/api/v1/users/$testUserId/settings',
+          ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.clearSettings(),
+          apiClient.clearSettings(userId: testUserId),
           throwsA(isA<UnknownException>()),
         );
         verify(
-          () => mockHttpClient.delete<void>(baseSettingsPath),
+          () => mockHttpClient.delete<void>(
+            '/api/v1/users/$testUserId/settings',
+          ),
         ).called(1);
       });
 
@@ -440,16 +507,20 @@ void main() {
         // Correct exception name and constructor
         final exception = UnauthorizedException('Invalid token');
         when(
-          () => mockHttpClient.delete<void>(baseSettingsPath),
+          () => mockHttpClient.delete<void>(
+            '/api/v1/users/$testUserId/settings',
+          ),
         ).thenThrow(exception);
 
         expect(
-          apiClient.clearSettings(),
+          apiClient.clearSettings(userId: testUserId),
           // Use correct exception type
           throwsA(isA<UnauthorizedException>()),
         );
         verify(
-          () => mockHttpClient.delete<void>(baseSettingsPath),
+          () => mockHttpClient.delete<void>(
+            '/api/v1/users/$testUserId/settings',
+          ),
         ).called(1);
       });
     });
