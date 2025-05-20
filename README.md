@@ -4,6 +4,8 @@
 [![style: very good analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
 [![License: PolyForm Free Trial](https://img.shields.io/badge/License-PolyForm%20Free%20Trial-blue)](https://polyformproject.org/licenses/free-trial/1.0.0)
 
+> **Note:** This package is being archived. Please use the successor package [`ht-data-api`](https://github.com/headlines-toolkit/ht-data-api) instead.
+
 An API client implementation for managing user application settings via an HTTP backend, part of the Headlines Toolkit (HT) ecosystem.
 
 ## Description
